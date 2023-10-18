@@ -21,7 +21,7 @@ public class BattleField {
         return field;
     }
 
-    // Проверка, можно ли по этим координатам что-нибудь положить
+    // Проверка пусто ли в этой клетке
     public boolean checkGrid(int x, int y) {
         if (x < size && y < size) {
             if (field[y][x].equals("[ ]")) {
@@ -49,6 +49,12 @@ public class BattleField {
     public void addUnit(Unit unit) {
         for (int i = 0; i < unit.getSize(); i++) {
             field[unit.getY()[i]][unit.getX()[i]] = unit.getSign();
+        }
+    }
+
+    public void delUnit(Unit unit) {
+        for (int i = 0; i < unit.getSize(); i++) {
+            field[unit.getY()[i]][unit.getX()[i]] = "[ ]";
         }
     }
 

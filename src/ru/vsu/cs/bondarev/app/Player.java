@@ -63,7 +63,7 @@ public class Player {
                 .append(countLiveUnits).append("\n");
 
         for (int i = 0; i < units.size(); i++) {
-            str.append(units.get(i).getStatus()).append("\n");
+            str.append(i + 1).append(". ").append(units.get(i).getStatus()).append("\n");
         }
         str.append(field.getFieldStatus());
         // Добавление пробелов для каждой строки, чтобы количество символов было одинаковым
@@ -124,6 +124,155 @@ public class Player {
         field.getField()[y][x] = "[?]";
     }
 
+    public boolean moveUnit(int n, int m) {
+        Unit checkUnit = units.get(n - 1);
+        // Проверка, могу ли я переместить юнит
+        if (!checkUnit.getCanMove()) {
+            return false;
+        }
+        if (checkUnit.getSize() != checkUnit.getHealth()) {
+            return false;
+        }
+        // Перемещение влево или вверх
+        if (m == 1) {
+            // Если размер юнита = 1, то он рандомно может выбрать направление перемещения
+            if (checkUnit.getSize() == 1) {
+                // Влево
+                if (Math.random() * 10 < 5) {
+                    // Проверка выход за границу поля
+                    if (checkUnit.getX()[0] - 1 < 0) {
+                        return false;
+                    }
+                    // Проверка на перемещение на непустую клетку
+                    if (!field.checkGrid(checkUnit.getX()[0] - 1, checkUnit.getY()[0])) {
+                        return false;
+                    }
+                    field.delUnit(checkUnit);
+                    checkUnit.getX()[0] -= 1;
+                    field.addUnit(checkUnit);
+                    return true;
+                }
+                // Вверх
+                else {
+                    if (checkUnit.getY()[0] - 1 < 0) {
+                        return false;
+                    }
+                    // Проверка на перемещение на непустую клетку
+                    if (!field.checkGrid(checkUnit.getX()[0], checkUnit.getY()[0] - 1)) {
+                        return false;
+                    }
+                    field.delUnit(checkUnit);
+                    checkUnit.getY()[0] -= 1;
+                    field.addUnit(checkUnit);
+                    return true;
+                }
+            }
+            // Если размер больше 1
+            else {
+                // Проверка направления
+                // Юнит вертикальный
+                if (checkUnit.getY()[1] - checkUnit.getY()[0] == 1) {
+                    if (checkUnit.getY()[0] - 1 < 0) {
+                        return false;
+                    }
+                    // Проверка на перемещение на непустую клетку
+                    if (!field.checkGrid(checkUnit.getX()[0], checkUnit.getY()[0] - 1)) {
+                        return false;
+                    }
+                    field.delUnit(checkUnit);
+                    for (int i = 0; i < checkUnit.getSize(); i++) {
+                        checkUnit.getY()[i] -= 1;
+                    }
+                    field.addUnit(checkUnit);
+                    return true;
+                }
+                // Юнит горизонтальный
+                else {
+                    if (checkUnit.getX()[0] - 1 < 0) {
+                        return false;
+                    }
+                    // Проверка на перемещение на непустую клетку
+                    if (!field.checkGrid(checkUnit.getX()[0] - 1, checkUnit.getY()[0])) {
+                        return false;
+                    }
+                    field.delUnit(checkUnit);
+                    for (int i = 0; i < checkUnit.getSize(); i++) {
+                        checkUnit.getX()[i] -= 1;
+                    }
+                    field.addUnit(checkUnit);
+                    return true;
+                }
+            }
+        }
+        // Перемещение вправо или вниз
+        else {
+            // Если размер юнита = 1, то он рандомно может выбрать направление перемещения
+            if (checkUnit.getSize() == 1) {
+                // Вправо
+                if (Math.random() * 10 < 5) {
+                    // Проверка выход за границу поля
+                    if (checkUnit.getX()[checkUnit.getSize() - 1] + 1 > field.getSize() - 1) {
+                        return false;
+                    }
+                    // Проверка на перемещение на непустую клетку
+                    if (!field.checkGrid(checkUnit.getX()[checkUnit.getSize() - 1] + 1, checkUnit.getY()[checkUnit.getSize() - 1])) {
+                        return false;
+                    }
+                    field.delUnit(checkUnit);
+                    checkUnit.getX()[checkUnit.getSize() - 1] += 1;
+                    field.addUnit(checkUnit);
+                    return true;
+                }
+                // Вниз
+                else {
+                    if (checkUnit.getY()[checkUnit.getSize() - 1] + 1 > field.getSize() - 1) {
+                        return false;
+                    }
+                    if (!field.checkGrid(checkUnit.getX()[checkUnit.getSize() - 1], checkUnit.getY()[checkUnit.getSize() - 1] + 1)) {
+                        return false;
+                    }
+                    field.delUnit(checkUnit);
+                    checkUnit.getY()[checkUnit.getSize()] += 1;
+                    field.addUnit(checkUnit);
+                    return true;
+                }
+            }
+            // Если размер больше 1
+            else {
+                // Проверка направления
+                // Юнит вертикальный
+                if (checkUnit.getY()[1] - checkUnit.getY()[0] == 1) {
+                    if (checkUnit.getY()[checkUnit.getSize() - 1] + 1 > field.getSize() - 1) {
+                        return false;
+                    }
+                    if (!field.checkGrid(checkUnit.getX()[checkUnit.getSize() - 1], checkUnit.getY()[checkUnit.getSize() - 1] + 1)) {
+                        return false;
+                    }
+                    field.delUnit(checkUnit);
+                    for (int i = 0; i < checkUnit.getSize(); i++) {
+                        checkUnit.getY()[i] += 1;
+                    }
+                    field.addUnit(checkUnit);
+                    return true;
+                }
+                // Юнит горизонтальный
+                else {
+                    if (checkUnit.getX()[checkUnit.getSize() - 1] + 1 > field.getSize() - 1) {
+                        return false;
+                    }
+                    if (!field.checkGrid(checkUnit.getX()[checkUnit.getSize() - 1] + 1, checkUnit.getY()[checkUnit.getSize() - 1])) {
+                        return false;
+                    }
+                    field.delUnit(checkUnit);
+                    for (int i = 0; i < checkUnit.getSize(); i++) {
+                        checkUnit.getX()[i] += 1;
+                    }
+                    field.addUnit(checkUnit);
+                    return true;
+                }
+            }
+        }
+    }
     // Получение корабля по координатам
     private Unit getUnitByPoint(int x, int y) {
         for (int i = 0; i < units.size(); i++) {

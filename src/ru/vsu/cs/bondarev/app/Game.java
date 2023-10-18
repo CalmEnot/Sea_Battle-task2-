@@ -30,6 +30,7 @@ public class Game {
         System.out.println("Команды: 1 - сгенерировать корабли, 2 - подтвердить расстановку");
         String input = "";
         int sizeF;
+        // Выяснение размеров поля
         while (true) {
             try {
                 System.out.print("Размеры поля (число, не меньшее 10): ");
@@ -51,8 +52,12 @@ public class Game {
             System.out.print("Команда: ");
             input = scanner.nextLine();
             if (input.equals("1")) {
-                player1.genUnits(1);
+                player1.genUnits(6);
             } else if (input.equals("2")) {
+                if (player1.getCountLiveUnits() < 1) {
+                    System.out.println("Невозможно продолжить, так как не было расстановки!");
+                    continue;
+                }
                 System.out.println("Расстановка подтверждена!");
                 break;
             } else {
@@ -69,8 +74,12 @@ public class Game {
             System.out.print("Команда: ");
             input = scanner.nextLine();
             if (input.equals("1")) {
-                player2.genUnits(1);
+                player2.genUnits(6);
             } else if (input.equals("2")) {
+                if (player2.getCountLiveUnits() < 1) {
+                    System.out.println("Невозможно продолжить, так как не было расстановки!");
+                    continue;
+                }
                 System.out.println("Расстановка подтверждена!");
                 break;
             } else {
@@ -100,9 +109,23 @@ public class Game {
                     System.out.println("Неправильный ввод команды!");
                     continue;
                 }
-
                 if (checkCommand[0] == 0) {
-                    break;
+                    // Проверки на номер корабля и направление
+                    if (checkCommand[1] < 0 || checkCommand[1] > player1.getUnits().size()) {
+                        System.out.println("Неправильный ввод номера корабля!");
+                        continue;
+                    }
+                    if (checkCommand[2] != 1 && checkCommand[2] != 2) {
+                        System.out.println("Неправильный ввод направления!");
+                        continue;
+                    }
+                    if (player1.moveUnit(checkCommand[1], checkCommand[2])) {
+                        System.out.println("Первый игрок успешно передвинул корабль!");
+                        System.out.println(getPlayersStatus(player1.getPlayerStatus(), player2.getPlayerStatus()));
+                        break;
+                    }
+                    System.out.println("Невозможно передвинуть данный корабль!");
+
                 } else if (checkCommand[0] == 1) {
                     // Проверка ввода координат
                     if (checkCommand[1] < 1 || checkCommand[1] > player1.getBattleField().getSize() || checkCommand[2] < 1 || checkCommand[2] > player1.getBattleField().getSize()) {
@@ -141,7 +164,21 @@ public class Game {
                     continue;
                 }
                 if (checkCommand[0] == 0) {
-                    break;
+                    // Проверки на номер корабля и направление
+                    if (checkCommand[1] < 0 || checkCommand[1] > player1.getUnits().size()) {
+                        System.out.println("Неправильный ввод номера корабля!");
+                        continue;
+                    }
+                    if (checkCommand[2] != 1 && checkCommand[2] != 2) {
+                        System.out.println("Неправильный ввод направления!");
+                        continue;
+                    }
+                    if (player1.moveUnit(checkCommand[1], checkCommand[2])) {
+                        System.out.println("Второй игрок успешно передвинул корабль!");
+                        System.out.println(getPlayersStatus(player1.getPlayerStatus(), player2.getPlayerStatus()));
+                        break;
+                    }
+                    System.out.println("Невозможно передвинуть данный корабль!");
                 } else if (checkCommand[0] == 1) {
                     if (checkCommand[1] < 1 || checkCommand[1] > player2.getBattleField().getSize() || checkCommand[2] < 1 || checkCommand[2] > player2.getBattleField().getSize()) {
                         System.out.println("Неправильный ввод координат!");
