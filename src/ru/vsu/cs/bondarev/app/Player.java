@@ -65,6 +65,7 @@ public class Player {
         for (int i = 0; i < units.size(); i++) {
             str.append(i + 1).append(". ").append(units.get(i).getStatus()).append("\n");
         }
+        str.append("Поле:\n");
         str.append(field.getFieldStatus());
         // Добавление пробелов для каждой строки, чтобы количество символов было одинаковым
         String[] editStrings = str.toString().split("\n");
@@ -124,6 +125,7 @@ public class Player {
         field.getField()[y][x] = "[?]";
     }
 
+    // Перемещение юнитов
     public boolean moveUnit(int n, int m) {
         Unit checkUnit = units.get(n - 1);
         // Проверка, могу ли я переместить юнит
@@ -211,28 +213,28 @@ public class Player {
                 // Вправо
                 if (Math.random() * 10 < 5) {
                     // Проверка выход за границу поля
-                    if (checkUnit.getX()[checkUnit.getSize() - 1] + 1 > field.getSize() - 1) {
+                    if (checkUnit.getX()[0] + 1 > field.getSize() - 1) {
                         return false;
                     }
                     // Проверка на перемещение на непустую клетку
-                    if (!field.checkGrid(checkUnit.getX()[checkUnit.getSize() - 1] + 1, checkUnit.getY()[checkUnit.getSize() - 1])) {
+                    if (!field.checkGrid(checkUnit.getX()[0] + 1, checkUnit.getY()[0])) {
                         return false;
                     }
                     field.delUnit(checkUnit);
-                    checkUnit.getX()[checkUnit.getSize() - 1] += 1;
+                    checkUnit.getX()[0] += 1;
                     field.addUnit(checkUnit);
                     return true;
                 }
                 // Вниз
                 else {
-                    if (checkUnit.getY()[checkUnit.getSize() - 1] + 1 > field.getSize() - 1) {
+                    if (checkUnit.getY()[0] + 1 > field.getSize() - 1) {
                         return false;
                     }
-                    if (!field.checkGrid(checkUnit.getX()[checkUnit.getSize() - 1], checkUnit.getY()[checkUnit.getSize() - 1] + 1)) {
+                    if (!field.checkGrid(checkUnit.getX()[0], checkUnit.getY()[0] + 1)) {
                         return false;
                     }
                     field.delUnit(checkUnit);
-                    checkUnit.getY()[checkUnit.getSize()] += 1;
+                    checkUnit.getY()[0] += 1;
                     field.addUnit(checkUnit);
                     return true;
                 }

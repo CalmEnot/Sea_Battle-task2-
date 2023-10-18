@@ -38,7 +38,19 @@ public class BattleField {
     // Получение информации о поле
     public String getFieldStatus() {
         StringBuilder str = new StringBuilder();
+        str.append("   ");
         for (int i = 0; i < field.length; i++) {
+            if (i + 1 < 10) {
+                str.append(0);
+            }
+            str.append(i+1).append(" ");
+        }
+        str.append("\n");
+        for (int i = 0; i < field.length; i++) {
+            if (i + 1 < 10) {
+                str.append(0);
+            }
+            str.append(i+1).append(" ");
             for (int j = 0; j < field[0].length; j++) {
                 str.append(field[i][j]);
             }

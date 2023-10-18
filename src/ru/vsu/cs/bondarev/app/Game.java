@@ -33,9 +33,9 @@ public class Game {
         // Выяснение размеров поля
         while (true) {
             try {
-                System.out.print("Размеры поля (число, не меньшее 10): ");
+                System.out.print("Размеры поля (число, не меньшее 10 и не большее 50): ");
                 sizeF = Integer.parseInt(scanner.nextLine());
-                if (sizeF < 10) {
+                if (sizeF < 10 || sizeF > 50) {
                     System.out.println("Недопустимые размеры поля!");
                     continue;
                 }
@@ -173,7 +173,7 @@ public class Game {
                         System.out.println("Неправильный ввод направления!");
                         continue;
                     }
-                    if (player1.moveUnit(checkCommand[1], checkCommand[2])) {
+                    if (player2.moveUnit(checkCommand[1], checkCommand[2])) {
                         System.out.println("Второй игрок успешно передвинул корабль!");
                         System.out.println(getPlayersStatus(player1.getPlayerStatus(), player2.getPlayerStatus()));
                         break;
