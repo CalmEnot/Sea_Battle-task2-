@@ -25,6 +25,7 @@ public class Battleship extends Unit {
         this.size = size;
         this.vertical = vertical;
         this.health = size;
+        this.canMove = true;
     }
     // Получение информации об корабле
     public String getStatus() {

@@ -14,10 +14,10 @@ public class Player {
     private int countLiveUnits;
     private BattleField field;
 
-    public Player(String name) {
+    public Player(String name, int sizeField) {
         this.name = name;
         this.countLiveUnits = 0;
-        this.field = new BattleField();
+        this.field = new BattleField(sizeField);
         this.units = new ArrayList<>();
     }
 
@@ -39,7 +39,8 @@ public class Player {
 
     // Размещение юнитов по полю в рандомные места
     public void genUnits(int count) {
-        field = new BattleField();
+        int sizeF = field.getSize();
+        field = new BattleField(sizeF);
         units = new ArrayList<>();
         countLiveUnits = 0;
         for (int i = 0; i < count; i++) {

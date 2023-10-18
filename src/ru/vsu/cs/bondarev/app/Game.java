@@ -22,14 +22,29 @@ public class Game {
         }
     }
 
+    // Игра с самим собой
     private void gameMode1(Scanner scanner) {
         System.out.println("Выбран режим: игра с самим собой");
         System.out.println("Фаза игры: расстановка");
         // Фаза расстановки
         System.out.println("Команды: 1 - сгенерировать корабли, 2 - подтвердить расстановку");
         String input = "";
+        int sizeF;
+        while (true) {
+            try {
+                System.out.print("Размеры поля (число, не меньшее 10): ");
+                sizeF = Integer.parseInt(scanner.nextLine());
+                if (sizeF < 10) {
+                    System.out.println("Недопустимые размеры поля!");
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException nfe) {
+                System.out.println("Неправильный ввод команды!");
+            }
+        }
         System.out.print("Имя первого игрока: ");
-        Player player1 = new Player(scanner.nextLine());
+        Player player1 = new Player(scanner.nextLine(), sizeF);
         System.out.println("Расстановка первого игрока: ");
         System.out.println(player1.getPlayerStatus());
         while (true) {
@@ -47,7 +62,7 @@ public class Game {
             System.out.println(player1.getPlayerStatus());
         }
         System.out.print("Имя второго игрока: ");
-        Player player2 = new Player(scanner.nextLine());
+        Player player2 = new Player(scanner.nextLine(), sizeF);
         System.out.println("Расстановка второго игрока:");
         System.out.println(player2.getPlayerStatus());
         while (true) {
@@ -69,7 +84,10 @@ public class Game {
 
         // Фаза боя
         System.out.println("Фаза игры: бой");
-        System.out.println("Команды: '0 x y' - передвинуть корабль, '1 x y' - атаковать ракетой, '2 x y' - атаковать торпедой");
+        System.out.println("""
+                Команды:\n '0 n w' - передвинуть корабль, где n - номер корабля из списка начина с 1, w - направление(1 - влево или вверх, 2 - вправо или вниз)
+                 '1 x y' - атаковать ракетой
+                 '2 x y' - атаковать торпедой""");
         // Прописание ходов
         while (player1.getCountLiveUnits() > 0 && player2.getCountLiveUnits() > 0) {
             // Первый игрок
@@ -82,14 +100,16 @@ public class Game {
                     System.out.println("Неправильный ввод команды!");
                     continue;
                 }
-                // Проверка ввода координат
-                if (checkCommand[1] < 1 || checkCommand[1] > 10 || checkCommand[2] < 1 || checkCommand[2] > 10) {
-                    System.out.println("Неправильный ввод координат!");
-                    continue;
-                }
+
                 if (checkCommand[0] == 0) {
                     break;
                 } else if (checkCommand[0] == 1) {
+                    // Проверка ввода координат
+                    if (checkCommand[1] < 1 || checkCommand[1] > player1.getBattleField().getSize() || checkCommand[2] < 1 || checkCommand[2] > player1.getBattleField().getSize()) {
+                        System.out.println("Неправильный ввод координат!");
+                        continue;
+                    }
+                    // Проверка попадания
                     if (player1.attackByRocket(checkCommand[1], checkCommand[2], player2)) {
                         System.out.println("Первый игрок попал!");
                         System.out.println(getPlayersStatus(player1.getPlayerStatus(), player2.getPlayerStatus()));
@@ -107,6 +127,7 @@ public class Game {
                     System.out.println("Неправильный ввод команды!");
                 }
             }
+            // Проверка уничтожения игрока
             if (player1.getCountLiveUnits() < 1 || player2.getCountLiveUnits() < 1) {
                 break;
             }
@@ -122,6 +143,10 @@ public class Game {
                 if (checkCommand[0] == 0) {
                     break;
                 } else if (checkCommand[0] == 1) {
+                    if (checkCommand[1] < 1 || checkCommand[1] > player2.getBattleField().getSize() || checkCommand[2] < 1 || checkCommand[2] > player2.getBattleField().getSize()) {
+                        System.out.println("Неправильный ввод координат!");
+                        continue;
+                    }
                     if (player2.attackByRocket(checkCommand[1], checkCommand[2], player1)) {
                         System.out.println("Второй игрок попал!");
                         System.out.println(getPlayersStatus(player1.getPlayerStatus(), player2.getPlayerStatus()));
@@ -139,10 +164,12 @@ public class Game {
                     System.out.println("Неправильный ввод команды!");
                 }
             }
+            // Проверка уничтожения игрока
             if (player1.getCountLiveUnits() < 1 || player2.getCountLiveUnits() < 1) {
                 break;
             }
         }
+        // Итог
         System.out.println("Итог:");
         System.out.println(getPlayersStatus(player1.getPlayerStatus(), player2.getPlayerStatus()));
         if (player1.getCountLiveUnits() < 1 && player2.getCountLiveUnits() < 1) {
