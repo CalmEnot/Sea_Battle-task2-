@@ -2,10 +2,11 @@ package ru.vsu.cs.bondarev.app;
 
 
 import ru.vsu.cs.bondarev.app.BattleField;
-import ru.vsu.cs.bondarev.units.Battleship;
-import ru.vsu.cs.bondarev.units.Unit;
+import ru.vsu.cs.bondarev.units.*;
 
+import javax.sound.midi.Soundbank;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Player {
@@ -43,7 +44,48 @@ public class Player {
         field = new BattleField(sizeF);
         units = new ArrayList<>();
         countLiveUnits = 0;
-        for (int i = 0; i < count; i++) {
+
+        // Создание мины
+        Unit mine = Mine.genUnit(field.getSize());
+        while (!field.canMakeUnit(mine)) {
+            mine = Mine.genUnit(field.getSize());
+        }
+        units.add(mine);
+        field.addUnit(mine);
+        // Создание подводной лодки
+        Unit submarine = Submarine.genUnit(field.getSize());
+        // Проверка, могу ли я его поместить на карту
+        while (!field.canMakeUnit(submarine)) {
+            submarine = Submarine.genUnit(field.getSize());
+        }
+        units.add(submarine);
+        countLiveUnits++;
+        field.addUnit(submarine);
+
+        // Создание тральщика
+        Unit minesweeper = Minesweeper.genUnit(field.getSize());
+        // Проверка, могу ли я его поместить на карту
+        while (!field.canMakeUnit(minesweeper)) {
+            minesweeper = Minesweeper.genUnit(field.getSize());
+        }
+        units.add(minesweeper);
+        countLiveUnits++;
+        field.addUnit(minesweeper);
+
+        // Генерация основных кораблей
+        for (int i = 0; i < count - 3; i++) {
+            // Создание обязательно кораблей каждого размера
+            if (i + 1 < 5) {
+                Unit battleShip = Battleship.genUnit(i + 1, field.getSize());
+                // Проверка, могу ли я его поместить на карту
+                while (!field.canMakeUnit(battleShip)) {
+                    battleShip = Battleship.genUnit(i + 1, field.getSize());
+                }
+                units.add(battleShip);
+                countLiveUnits++;
+                field.addUnit(battleShip);
+                continue;
+            }
             Unit battleShip = Battleship.genUnit(-1, field.getSize());
             // Проверка, могу ли я его поместить на карту
             while (!field.canMakeUnit(battleShip)) {
@@ -56,14 +98,19 @@ public class Player {
     }
 
     // Получение информации о юнитах и карте игрока
-    public String getPlayerStatus() {
+    public String getPlayerStatus(int deltaCntUnit) {
         StringBuilder str = new StringBuilder();
         str.append("Имя: ").append(name).append("\n");
         str.append("Количество юнитов: ").append(units.size()).append(", живых - ")
                 .append(countLiveUnits).append("\n");
-
         for (int i = 0; i < units.size(); i++) {
             str.append(i + 1).append(". ").append(units.get(i).getStatus()).append("\n");
+        }
+        // Пропуск строки, если у игроков разное количество юнитов
+        if (deltaCntUnit > 0) {
+            for (int i = 0; i < deltaCntUnit; i++) {
+                str.append("\n");
+            }
         }
         str.append("Поле:\n");
         str.append(field.getFieldStatus());
@@ -94,7 +141,53 @@ public class Player {
             if (checkGrid.equals("[!]") || checkGrid.equals("[X]") || checkGrid.equals("[?]")) {
                 return false;
             }
+            // Проверка, попал ли на мину
+            if (checkGrid.equals("[*]")) {
+                System.out.println("О нет! Игрок попал на мину!");
+                // Выбор случайной непомеченной ячейки для атаки
+                int randomUnit;
+                int randomPoint;
+                while (true) {
+                    randomUnit = (int) (Math.random() * getUnits().size());
+                    while (randomUnit > getUnits().size() - 1) {
+                        randomUnit = (int) (Math.random() * getUnits().size());
+                    }
+                    if (units.get(randomUnit).getHealth() < 1 || units.get(randomUnit).getSign().equals("[*]")) {
+                        continue;
+                    }
+                    randomPoint = (int) (Math.random() * getUnits().get(randomUnit).getSize());
+                    while (randomPoint > getUnits().get(randomUnit).getSize() - 1) {
+                        randomPoint = (int) (Math.random() * getUnits().get(randomUnit).getSize());
+                    }
+                    String unitGrid = field.getField()[units.get(randomUnit).getY()[randomPoint]][units.get(randomUnit).getX()[randomPoint]];
+                    if (unitGrid.equals("[!]")) {
+                        continue;
+                    }
+                    break;
+                }
+                // Помечаем, что мина уничтожена
+                markDestroy(checkUnit, player.getBattleField());
+                checkUnit.setHealth(checkUnit.getHealth() - 1);
+                // Помечаем подбитый корабль
+                Unit markUnit = units.get(randomUnit);
+                markUnit.setHealth(markUnit.getHealth() - 1);
+                markUnit.setCanMove(false);
+                if (markUnit.getHealth() < 1) {
+                    markDestroy(markUnit, field);
+                    setCountLiveUnits(getCountLiveUnits() - 1);
+                } else {
+                    markHit(markUnit.getX()[randomPoint], markUnit.getY()[randomPoint], field);
+                }
+                System.out.print("Корабль ");
+                System.out.print(name);
+                System.out.print(" (");
+                System.out.print(getUnits().get(randomUnit).getStatus());
+                System.out.println(") был подбит!");
+                return false;
+            }
+
             checkUnit.setHealth(checkUnit.getHealth() - 1);
+            checkUnit.setCanMove(false);
             // Проверка здоровья
             if (checkUnit.getHealth() < 1) {
                 markDestroy(checkUnit, player.getBattleField());
@@ -126,15 +219,15 @@ public class Player {
     }
 
     // Перемещение юнитов
-    public boolean moveUnit(int n, int m) {
+    public boolean moveBattleShip(int n, int m) {
         Unit checkUnit = units.get(n - 1);
         // Проверка, могу ли я переместить юнит
         if (!checkUnit.getCanMove()) {
             return false;
         }
-        if (checkUnit.getSize() != checkUnit.getHealth()) {
-            return false;
-        }
+//        if (checkUnit.getSize() != checkUnit.getHealth()) {
+//            return false;
+//        }
         // Перемещение влево или вверх
         if (m == 1) {
             // Если размер юнита = 1, то он рандомно может выбрать направление перемещения
@@ -275,6 +368,149 @@ public class Player {
             }
         }
     }
+
+    // Перемещение подводной лодки или тральщика
+    public boolean moveSpecUnit(int n, int x, int y, Player enemy) {
+
+        Unit checkUnit = units.get(n - 1);
+        // Проверка, могу ли я переместить юнит
+        if (!checkUnit.getCanMove()) {
+            return false;
+        }
+        // Подводная людка
+        if (checkUnit.getSign().equals("[$]")) {
+            int[] mineP = new int[] {checkUnit.getX()[1], checkUnit.getY()[1]};
+            boolean vertical;
+            if (checkUnit.getX()[1] - checkUnit.getX()[0] == 1) {
+                vertical = false;
+            } else {
+                vertical = true;
+            }
+            // Проверка координат
+            if (vertical) {
+                if (Math.abs(checkUnit.getY()[0] - y) < 2 && checkUnit.getX()[0] == x) {
+                    System.out.println("Слишком малое расстояния для того, чтобы можно было поставить мину!");
+                    return false;
+                }
+            } else {
+                if (Math.abs(checkUnit.getX()[0] - x) < 2 && checkUnit.getY()[0] == y) {
+                    System.out.println("Слишком малое расстояния для того, чтобы можно было поставить мину!");
+                    return false;
+                }
+            }
+            field.delUnit(checkUnit);
+            int[] oldXP = new int[] {checkUnit.getX()[0], checkUnit.getX()[1], checkUnit.getX()[2]};
+            int[] oldYP = new int[] {checkUnit.getY()[0], checkUnit.getY()[1], checkUnit.getY()[2]};
+            // Обновляю на новые точки
+            for (int i = 0; i < checkUnit.getSize(); i++) {
+                if (vertical) {
+                    checkUnit.getX()[i] = x;
+                    checkUnit.getY()[i] = y + i;
+                } else {
+                    checkUnit.getX()[i] = x + i;
+                    checkUnit.getY()[i] = y;
+                }
+            }
+            // Если могу переместить подводную лодку
+            if (field.canMakeUnit(checkUnit)) {
+                // Создаю мину
+                Mine newMine = new Mine(mineP[0], mineP[1]);
+                field.addUnit(newMine);
+                units.add(0, newMine);
+                // Перемещаю подводную лодку
+                field.addUnit(checkUnit);
+                return true;
+            }
+            // Если не могу
+            checkUnit.setX(oldXP);
+            checkUnit.setY(oldYP);
+            field.addUnit(checkUnit);
+            return false;
+        }
+        // Тральщик
+        else {
+            field.delUnit(checkUnit);
+            int[] oldXP = new int[] {checkUnit.getX()[0], checkUnit.getX()[1], checkUnit.getX()[2]};
+            int[] oldYP = new int[] {checkUnit.getY()[0], checkUnit.getY()[1], checkUnit.getY()[2]};
+            boolean vertical;
+            // Обновляю на новые точки
+            if (oldXP[1] - oldXP[0] == 1) {
+                vertical = false;
+            } else {
+                vertical = true;
+            }
+            for (int i = 0; i < checkUnit.getSize(); i++) {
+                if (vertical) {
+                    checkUnit.getX()[i] = x;
+                    checkUnit.getY()[i] = y + i;
+                } else {
+                    checkUnit.getX()[i] = x + i;
+                    checkUnit.getY()[i] = y;
+                }
+            }
+            // Если могу переместить тральщик
+            if (field.canMakeUnit(checkUnit)) {
+                // Перемещаю тральщик
+                List<int[]> checkPoints = new ArrayList<>();
+                // Добавление точек для проверки вокруг тральщика мин
+                if (vertical) {
+                    checkPoints.add(new int[]{checkUnit.getX()[0] - 1, checkUnit.getY()[0] - 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[0] - 1, checkUnit.getY()[0]});
+                    checkPoints.add(new int[]{checkUnit.getX()[0], checkUnit.getY()[0] - 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[0], checkUnit.getY()[0]});
+                    checkPoints.add(new int[]{checkUnit.getX()[0] + 1, checkUnit.getY()[0] - 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[0] + 1, checkUnit.getY()[0]});
+                    checkPoints.add(new int[]{checkUnit.getX()[1] - 1, checkUnit.getY()[1]});
+                    checkPoints.add(new int[]{checkUnit.getX()[1], checkUnit.getY()[1]});
+                    checkPoints.add(new int[]{checkUnit.getX()[1] + 1, checkUnit.getY()[1]});
+                    checkPoints.add(new int[]{checkUnit.getX()[2] - 1, checkUnit.getY()[2] + 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[2] - 1, checkUnit.getY()[2]});
+                    checkPoints.add(new int[]{checkUnit.getX()[2], checkUnit.getY()[2] + 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[2], checkUnit.getY()[2]});
+                    checkPoints.add(new int[]{checkUnit.getX()[2] + 1, checkUnit.getY()[2] + 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[2] + 1, checkUnit.getY()[2]});
+                } else {
+                    checkPoints.add(new int[]{checkUnit.getX()[0] - 1, checkUnit.getY()[0] - 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[0] - 1, checkUnit.getY()[0]});
+                    checkPoints.add(new int[]{checkUnit.getX()[0] - 1, checkUnit.getY()[0] + 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[0], checkUnit.getY()[0] - 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[0], checkUnit.getY()[0]});
+                    checkPoints.add(new int[]{checkUnit.getX()[0], checkUnit.getY()[0] + 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[1], checkUnit.getY()[0] - 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[1], checkUnit.getY()[0]});
+                    checkPoints.add(new int[]{checkUnit.getX()[1], checkUnit.getY()[0] + 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[2], checkUnit.getY()[0] - 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[2], checkUnit.getY()[0]});
+                    checkPoints.add(new int[]{checkUnit.getX()[2], checkUnit.getY()[0] + 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[2] + 1, checkUnit.getY()[0] - 1});
+                    checkPoints.add(new int[]{checkUnit.getX()[2] + 1, checkUnit.getY()[0]});
+                    checkPoints.add(new int[]{checkUnit.getX()[2] + 1, checkUnit.getY()[0] + 1});
+                }
+                // Проверка мин
+                for (int i = 0; i < checkPoints.size(); i++) {
+                    if (checkPoints.get(i)[0] + 1 > field.getSize() || checkPoints.get(i)[0] < 0
+                            || checkPoints.get(i)[1] + 1 > field.getSize() || checkPoints.get(i)[1] < 0) {
+                        continue;
+                    }
+                    int[] checkPoint = checkPoints.get(i);
+                    if (enemy.field.getField()[checkPoint[1]][checkPoint[0]].equals("[*]")) {
+                        System.out.println("Была уничтожена мина!");
+                        Unit mine = enemy.getUnitByPoint(checkPoint[0], checkPoint[1]);
+                        enemy.markDestroy(mine, enemy.getBattleField());
+                        mine.setHealth(0);
+                    }
+                }
+                field.addUnit(checkUnit);
+                return true;
+            }
+            // Если не могу
+            checkUnit.setX(oldXP);
+            checkUnit.setY(oldYP);
+            field.addUnit(checkUnit);
+            return false;
+        }
+    }
+
     // Получение корабля по координатам
     private Unit getUnitByPoint(int x, int y) {
         for (int i = 0; i < units.size(); i++) {
