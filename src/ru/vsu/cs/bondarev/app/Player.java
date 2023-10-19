@@ -511,6 +511,36 @@ public class Player {
         }
     }
 
+    public boolean canAttackByTorpedo(int y) {
+        for (int i = 0; i < field.getSize(); i++) {
+            if (getUnitByPoint(i, y) != null) {
+                if (!getUnitByPoint(i, y).getSign().equals("[*]")) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean attackTorpedo(int y, Player player) {
+        Unit checkUnit;
+        for (int i = 0; i < player.getBattleField().getField().length; i++) {
+            checkUnit = player.getUnitByPoint(i, y);
+            if (checkUnit != null) {
+                if (checkUnit.getHealth() != 0) {
+                    markDestroy(checkUnit, player.getBattleField());
+                    checkUnit.setHealth(0);
+                    if (!checkUnit.getSign().equals("[*]")) {
+                        checkUnit.setCanMove(false);
+                        player.setCountLiveUnits(player.getCountLiveUnits() - 1);
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     // Получение корабля по координатам
     private Unit getUnitByPoint(int x, int y) {
         for (int i = 0; i < units.size(); i++) {
