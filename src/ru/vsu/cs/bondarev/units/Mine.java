@@ -22,6 +22,12 @@ public class Mine extends Unit{
         return str.toString();
     }
 
+    public String getHideStatus() {
+        StringBuilder str = new StringBuilder();
+        str.append("Мина; ").append("; Здоровье - ").append(health);
+        return str.toString();
+    }
+
     // Генерация Mine с рандомными параметрами
     public static Mine genUnit(int fieldSize) {
         return new Mine((int) (Math.random() * (fieldSize)), (int) (Math.random() * fieldSize));

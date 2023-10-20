@@ -36,6 +36,12 @@ public class Minesweeper extends Unit {
         return str.toString();
     }
 
+    public String getHideStatus() {
+        StringBuilder str = new StringBuilder();
+        str.append("Тральщик; ").append("; Здоровье - ").append(health);
+        return str.toString();
+    }
+
     // Генерация Minesweeper с рандомными параметрами
     public static Minesweeper genUnit(int fieldSize) {
         boolean vertical;

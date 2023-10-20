@@ -9,6 +9,7 @@ public abstract class Unit implements UnitInterface {
     protected boolean canMove;
 
     public abstract String getStatus();
+    public abstract String getHideStatus();
     public int getSize() {
         return size;
     }

@@ -130,7 +130,40 @@ public class Player {
         }
         return String.join("\n", editStrings);
     }
-    // Атака торпедой может быть по y такая, какая есть y у кораблей
+
+    public String getHidePlayerStatus(int deltaCntUnit) {
+        StringBuilder str = new StringBuilder();
+        str.append("Имя: ").append(name).append("\n");
+        str.append("Количество юнитов: ").append(units.size()).append(", живых - ")
+                .append(countLiveUnits).append("\n");
+        for (int i = 0; i < units.size(); i++) {
+            str.append(i + 1).append(". ").append(units.get(i).getHideStatus()).append("\n");
+        }
+        // Пропуск строки, если у игроков разное количество юнитов
+        if (deltaCntUnit > 0) {
+            for (int i = 0; i < deltaCntUnit; i++) {
+                str.append("\n");
+            }
+        }
+        str.append("Поле:\n");
+        str.append(field.getHideFieldStatus());
+        // Добавление пробелов для каждой строки, чтобы количество символов было одинаковым
+        String[] editStrings = str.toString().split("\n");
+        int maxString = 0;
+        for (int i = 0; i < editStrings.length; i++) {
+            if (editStrings[i].length() > maxString) {
+                maxString = editStrings[i].length();
+            }
+        }
+
+        for (int i = 0; i < editStrings.length; i++) {
+            while (editStrings[i].length() != maxString) {
+                editStrings[i] += " ";
+            }
+        }
+        return String.join("\n", editStrings);
+    }
+
     // Атака другого игрока
     public boolean attackByRocket(int x, int y, Player player) {
         Unit checkUnit = player.getUnitByPoint(x - 1, y - 1);
@@ -514,7 +547,7 @@ public class Player {
     public boolean canAttackByTorpedo(int y) {
         for (int i = 0; i < field.getSize(); i++) {
             if (getUnitByPoint(i, y) != null) {
-                if (!getUnitByPoint(i, y).getSign().equals("[*]")) {
+                if (!getUnitByPoint(i, y).getSign().equals("[*]") && !field.getField()[y][i].equals("[X]")) {
                     return true;
                 }
             }

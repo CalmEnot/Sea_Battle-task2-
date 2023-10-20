@@ -58,6 +58,33 @@ public class BattleField {
         }
         return str.toString();
     }
+
+    public String getHideFieldStatus() {
+        StringBuilder str = new StringBuilder();
+        str.append("   ");
+        for (int i = 0; i < field.length; i++) {
+            if (i + 1 < 10) {
+                str.append(0);
+            }
+            str.append(i+1).append(" ");
+        }
+        str.append("\n");
+        for (int i = 0; i < field.length; i++) {
+            if (i + 1 < 10) {
+                str.append(0);
+            }
+            str.append(i+1).append(" ");
+            for (int j = 0; j < field[0].length; j++) {
+                if (field[i][j].equals("[#]") || field[i][j].equals("[$]") || field[i][j].equals("[@]") || field[i][j].equals("[*]")) {
+                    str.append("[ ]");
+                    continue;
+                }
+                str.append(field[i][j]);
+            }
+            str.append("\n");
+        }
+        return str.toString();
+    }
     public void addUnit(Unit unit) {
         for (int i = 0; i < unit.getSize(); i++) {
             field[unit.getY()[i]][unit.getX()[i]] = unit.getSign();

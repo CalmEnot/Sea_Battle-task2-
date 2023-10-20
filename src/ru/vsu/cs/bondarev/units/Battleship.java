@@ -37,6 +37,12 @@ public class Battleship extends Unit {
         return str.toString();
     }
 
+    public String getHideStatus() {
+        StringBuilder str = new StringBuilder();
+        str.append("Крейсер; ").append("; Здоровье - ").append(health);
+        return str.toString();
+    }
+
     // Генерация BattleShip с рандомными параметрами
     public static Battleship genUnit(int unitSize, int fieldSize) {
         int size = unitSize;

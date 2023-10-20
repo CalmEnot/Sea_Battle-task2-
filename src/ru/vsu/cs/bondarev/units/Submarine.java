@@ -36,6 +36,12 @@ public class Submarine extends Unit {
         return str.toString();
     }
 
+    public String getHideStatus() {
+        StringBuilder str = new StringBuilder();
+        str.append("Подводная лодка; ").append("; Здоровье - ").append(health);
+        return str.toString();
+    }
+
     // Генерация Submarine с рандомными параметрами
     public static Submarine genUnit(int fieldSize) {
         boolean vertical;
