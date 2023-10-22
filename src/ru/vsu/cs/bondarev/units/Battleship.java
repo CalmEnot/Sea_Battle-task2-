@@ -1,5 +1,11 @@
 package ru.vsu.cs.bondarev.units;
 
+import ru.vsu.cs.bondarev.app.BattleField;
+import ru.vsu.cs.bondarev.app.Player;
+
+import javax.sound.midi.Soundbank;
+import java.util.Scanner;
+
 public class Battleship extends Unit {
     private boolean vertical;
 
@@ -28,18 +34,16 @@ public class Battleship extends Unit {
         this.canMove = true;
     }
     // Получение информации об корабле
-    public String getStatus() {
+    @Override
+    public String getStatus(boolean hide) {
         StringBuilder str = new StringBuilder();
-        str.append("Крейсер; ").append("x - ").append(x[0] + 1).append(" y - ")
-                .append(y[0] + 1).append("; Вертикальный - ").append(vertical)
-                .append("; Размер - ").append(size).append("; Знак - ").append(sign)
-                .append("; Здоровье - ").append(health);
-        return str.toString();
-    }
-
-    public String getHideStatus() {
-        StringBuilder str = new StringBuilder();
-        str.append("Крейсер; ").append("; Здоровье - ").append(health);
+        str.append("Крейсер");
+        if (!hide) {
+            str.append("; x - ").append(x[0] + 1).append(" y - ")
+                    .append(y[0] + 1).append("; Вертикальный - ").append(vertical)
+                    .append("; Размер - ").append(size).append("; Знак - ").append(sign);
+        }
+        str.append("; Здоровье - ").append(health);
         return str.toString();
     }
 
@@ -56,6 +60,15 @@ public class Battleship extends Unit {
             vertical = false;
         }
         return new Battleship((int) (Math.random() * (fieldSize)), (int) (Math.random() * fieldSize), size, vertical);
+    }
 
+    @Override
+    public boolean move(int x, int y, Player player1, Player player2) {
+        if (!this.getCanMove()) {
+            System.out.println("У корабля сломан двигатель!");
+            return false;
+        }
+        BattleField field = player1.getBattleField();
+        return field.tryMoveUnit(x, y, player1.getBattleField(), this, this.vertical);
     }
 }
