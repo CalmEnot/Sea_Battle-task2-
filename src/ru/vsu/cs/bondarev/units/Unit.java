@@ -147,6 +147,7 @@ public abstract class Unit implements UnitInterface {
         } else {
             player.getBattleField().markHit(this.getX()[randomPoint], this.getY()[randomPoint]);
         }
+        System.out.println("Игрок попал на мину!");
         System.out.print("Корабль (");
         System.out.print(this.getStatus(false));
         System.out.println(") был подбит!");

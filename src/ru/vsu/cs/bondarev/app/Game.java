@@ -2,6 +2,8 @@ package ru.vsu.cs.bondarev.app;
 
 import ru.vsu.cs.bondarev.units.Unit;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.SortedMap;
 
@@ -35,88 +37,11 @@ public class Game {
     private void gameMode1(Scanner scanner) {
         System.out.println("Выбран режим: игра с самим собой");
         System.out.println("Фаза игры: расстановка");
-        // Фаза расстановки
-        System.out.println("Команды: 1 - сгенерировать корабли, 2 - подтвердить расстановку");
-        String input = "";
-        int sizeF;
-        // Выяснение размеров поля
-        while (true) {
-            try {
-                System.out.print("Размеры поля (число, не меньшее 10 и не большее 50): ");
-                sizeF = Integer.parseInt(scanner.nextLine());
-                if (sizeF < 10 || sizeF > 50) {
-                    System.out.println("Недопустимые размеры поля!");
-                    continue;
-                }
-                break;
-            } catch (NumberFormatException nfe) {
-                System.out.println("Неправильный ввод команды!");
-            }
-        }
-
-        int cntUnit;
-        //Выяснение количества юнитов
-        while (true) {
-            try {
-                System.out.print("Количество юнитов (число, не меньшее 7 и не большее 15): ");
-                cntUnit = Integer.parseInt(scanner.nextLine());
-                if (cntUnit < 7 || cntUnit > 15) {
-                    System.out.println("Недопустимое количество юнитов!");
-                    continue;
-                }
-                break;
-            } catch (NumberFormatException nfe) {
-                System.out.println("Неправильный ввод команды!");
-            }
-        }
-
-        System.out.print("Имя первого игрока: ");
-        Player player1 = new Player(scanner.nextLine(), sizeF);
-        System.out.println("Расстановка первого игрока: ");
-        System.out.println(player1.getPlayerStatus(0, false));
-        while (true) {
-            System.out.print("Команда: ");
-            input = scanner.nextLine();
-            if (input.equals("1")) {
-                player1.genUnits(cntUnit);
-                System.out.println("Расстановка первого игрока: ");
-                System.out.println(player1.getPlayerStatus(0, false));
-            } else if (input.equals("2")) {
-                if (player1.getCountLiveUnits() < 1) {
-                    System.out.println("Невозможно продолжить, так как не было расстановки!");
-                    continue;
-                }
-                System.out.println("Расстановка подтверждена!");
-                break;
-            } else {
-                System.out.println("Неправильная команда!");
-            }
-        }
-        System.out.print("Имя второго игрока: ");
-        Player player2 = new Player(scanner.nextLine(), sizeF);
-        System.out.println("Расстановка второго игрока:");
-        System.out.println(player2.getPlayerStatus(0, false));
-        while (true) {
-            System.out.print("Команда: ");
-            input = scanner.nextLine();
-            if (input.equals("1")) {
-                player2.genUnits(cntUnit);
-                System.out.println("Расстановка второго игрока:");
-                System.out.println(player2.getPlayerStatus(0, false));
-            } else if (input.equals("2")) {
-                if (player2.getCountLiveUnits() < 1) {
-                    System.out.println("Невозможно продолжить, так как не было расстановки!");
-                    continue;
-                }
-                System.out.println("Расстановка подтверждена!");
-                break;
-            } else {
-                System.out.println("Неправильная команда!");
-            }
-        }
+        List<Player> list = arrangement(scanner);
+        Player player1 = list.get(0);
+        Player player2 = list.get(1);
         System.out.println("Итоговая расстановка: ");
         System.out.println(getPlayersStatus(player1, player2, false));
-
         // Фаза боя
         System.out.println("Фаза игры: бой");
         // Прописание ходов
@@ -198,7 +123,6 @@ public class Game {
                         attackTorpedoP1 = 1;
                         attackTorpedoP1Y = y - 1;
                         atTor1 = unitEdit;
-                        System.out.println(getPlayersStatus(player1, player2, false));
                         break;
                     } else {
                         System.out.println("Неудача! Торпеда не была выпущена!");
@@ -261,7 +185,9 @@ public class Game {
                     }
                     if (unitEdit.attackByRocket(point[0] - 1, point[1] - 1, player2, player1)) {
                         System.out.println("Игрок попал!");
+                        System.out.println(getPlayersStatus(player1, player2, false));
                     } else {
+                        System.out.println(getPlayersStatus(player1, player2, false));
                         System.out.println("Игрок промахнулся!");
                         break;
                     }
@@ -309,70 +235,11 @@ public class Game {
     private void gameMode2(Scanner scanner) {
         System.out.println("Выбран режим: игра против ии");
         System.out.println("Фаза игры: расстановка");
-        // Фаза расстановки
-        System.out.println("Команды: 1 - сгенерировать корабли, 2 - подтвердить расстановку");
-        String input = "";
-        int sizeF;
-        // Выяснение размеров поля
-        while (true) {
-            try {
-                System.out.print("Размеры поля (число, не меньшее 10 и не большее 50): ");
-                sizeF = Integer.parseInt(scanner.nextLine());
-                if (sizeF < 10 || sizeF > 50) {
-                    System.out.println("Недопустимые размеры поля!");
-                    continue;
-                }
-                break;
-            } catch (NumberFormatException nfe) {
-                System.out.println("Неправильный ввод команды!");
-            }
-        }
-
-        int cntUnit;
-        //Выяснение количества юнитов
-        while (true) {
-            try {
-                System.out.print("Количество юнитов (число, не меньшее 7 и не большее 15): ");
-                cntUnit = Integer.parseInt(scanner.nextLine());
-                if (cntUnit < 7 || cntUnit > 15) {
-                    System.out.println("Недопустимое количество юнитов!");
-                    continue;
-                }
-                break;
-            } catch (NumberFormatException nfe) {
-                System.out.println("Неправильный ввод команды!");
-            }
-        }
-
-        System.out.print("Имя первого игрока: ");
-        Player player1 = new Player(scanner.nextLine(), sizeF);
-        System.out.println("Расстановка первого игрока: ");
-        System.out.println(player1.getPlayerStatus(0, false));
-        while (true) {
-            System.out.print("Команда: ");
-            input = scanner.nextLine();
-            if (input.equals("1")) {
-                player1.genUnits(cntUnit);
-                System.out.println("Расстановка первого игрока: ");
-                System.out.println(player1.getPlayerStatus(0, false));
-            } else if (input.equals("2")) {
-                if (player1.getCountLiveUnits() < 1) {
-                    System.out.println("Невозможно продолжить, так как не было расстановки!");
-                    continue;
-                }
-                System.out.println("Расстановка подтверждена!");
-                break;
-            } else {
-                System.out.println("Неправильная команда!");
-            }
-        }
-        System.out.println("Имя второго игрока: Bot2");
-        Player player2 = new Player("Bot2", sizeF);
-        System.out.println("Расстановка второго игрока...");
-        player2.genUnits(cntUnit);
+        List<Player> list = arrangement(scanner);
+        Player player1 = list.get(0);
+        Player player2 = list.get(1);
         System.out.println("Итоговая расстановка: ");
         System.out.println(getPlayersStatus(player1, player2, true));
-
         // Фаза боя
         System.out.println("Фаза игры: бой");
         // Прописание ходов
@@ -565,85 +432,9 @@ public class Game {
     private void gameMode3(Scanner scanner) {
         System.out.println("Выбран режим: игра 2 ботов");
         System.out.println("Фаза игры: расстановка");
-        // Фаза расстановки
-        System.out.println("Команды: 1 - сгенерировать корабли, 2 - подтвердить расстановку");
-        String input = "";
-        int sizeF;
-        // Выяснение размеров поля
-        while (true) {
-            try {
-                System.out.print("Размеры поля (число, не меньшее 10 и не большее 50): ");
-                sizeF = Integer.parseInt(scanner.nextLine());
-                if (sizeF < 10 || sizeF > 50) {
-                    System.out.println("Недопустимые размеры поля!");
-                    continue;
-                }
-                break;
-            } catch (NumberFormatException nfe) {
-                System.out.println("Неправильный ввод команды!");
-            }
-        }
-
-        int cntUnit;
-        //Выяснение количества юнитов
-        while (true) {
-            try {
-                System.out.print("Количество юнитов (число, не меньшее 7 и не большее 15): ");
-                cntUnit = Integer.parseInt(scanner.nextLine());
-                if (cntUnit < 7 || cntUnit > 15) {
-                    System.out.println("Недопустимое количество юнитов!");
-                    continue;
-                }
-                break;
-            } catch (NumberFormatException nfe) {
-                System.out.println("Неправильный ввод команды!");
-            }
-        }
-
-        System.out.println("Имя первого Бота: Bot1");
-        Player player1 = new Player("Bot1", sizeF);
-        System.out.println("Расстановка первого Бота: ");
-        System.out.println(player1.getPlayerStatus(0, false));
-        while (true) {
-            System.out.print("Команда: ");
-            input = scanner.nextLine();
-            if (input.equals("1")) {
-                player1.genUnits(cntUnit);
-                System.out.println("Расстановка первого бота: ");
-                System.out.println(player1.getPlayerStatus(0, false));
-            } else if (input.equals("2")) {
-                if (player1.getCountLiveUnits() < 1) {
-                    System.out.println("Невозможно продолжить, так как не было расстановки!");
-                    continue;
-                }
-                System.out.println("Расстановка подтверждена!");
-                break;
-            } else {
-                System.out.println("Неправильная команда!");
-            }
-        }
-        System.out.println("Имя второго бота: Bot2");
-        Player player2 = new Player("Bot2", sizeF);
-        System.out.println("Расстановка второго бота: ");
-        System.out.println(player2.getPlayerStatus(0, false));
-        while (true) {
-            System.out.print("Команда: ");
-            input = scanner.nextLine();
-            if (input.equals("1")) {
-                player2.genUnits(cntUnit);
-                System.out.println("Расстановка второго бота:");
-                System.out.println(player2.getPlayerStatus(0, false));
-            } else if (input.equals("2")) {
-                if (player2.getCountLiveUnits() < 1) {
-                    System.out.println("Невозможно продолжить, так как не было расстановки!");
-                    continue;
-                }
-                System.out.println("Расстановка подтверждена!");
-                break;
-            } else {
-                System.out.println("Неправильная команда!");
-            }
-        }
+        List<Player> list = arrangement(scanner);
+        Player player1 = list.get(0);
+        Player player2 = list.get(1);
         System.out.println("Итоговая расстановка: ");
         System.out.println(getPlayersStatus(player1, player2, false));
 
@@ -830,6 +621,90 @@ public class Game {
         } else {
             System.out.println("Победил первый игрок!");
         }
+    }
+    public List<Player> arrangement(Scanner scanner) {
+        System.out.println("Команды: 1 - сгенерировать корабли, 2 - подтвердить расстановку");
+        String input = "";
+        int sizeF;
+        // Выяснение размеров поля
+        while (true) {
+            try {
+                System.out.print("Размеры поля (число, не меньшее 10 и не большее 50): ");
+                sizeF = Integer.parseInt(scanner.nextLine());
+                if (sizeF < 10 || sizeF > 50) {
+                    System.out.println("Недопустимые размеры поля!");
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException nfe) {
+                System.out.println("Неправильный ввод команды!");
+            }
+        }
+
+        int cntUnit;
+        //Выяснение количества юнитов
+        while (true) {
+            try {
+                System.out.print("Количество юнитов (число, не меньшее 7 и не большее 15): ");
+                cntUnit = Integer.parseInt(scanner.nextLine());
+                if (cntUnit < 7 || cntUnit > 15) {
+                    System.out.println("Недопустимое количество юнитов!");
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException nfe) {
+                System.out.println("Неправильный ввод команды!");
+            }
+        }
+
+        System.out.print("Имя первого игрока: ");
+        Player player1 = new Player(scanner.nextLine(), sizeF);
+        System.out.println("Расстановка первого игрока: ");
+        System.out.println(player1.getPlayerStatus(0, false));
+        while (true) {
+            System.out.print("Команда: ");
+            input = scanner.nextLine();
+            if (input.equals("1")) {
+                player1.genUnits(cntUnit);
+                System.out.println("Расстановка первого игрока: ");
+                System.out.println(player1.getPlayerStatus(0, false));
+            } else if (input.equals("2")) {
+                if (player1.getCountLiveUnits() < 1) {
+                    System.out.println("Невозможно продолжить, так как не было расстановки!");
+                    continue;
+                }
+                System.out.println("Расстановка подтверждена!");
+                break;
+            } else {
+                System.out.println("Неправильная команда!");
+            }
+        }
+        System.out.print("Имя второго игрока: ");
+        Player player2 = new Player(scanner.nextLine(), sizeF);
+        System.out.println("Расстановка второго игрока:");
+        System.out.println(player2.getPlayerStatus(0, false));
+        while (true) {
+            System.out.print("Команда: ");
+            input = scanner.nextLine();
+            if (input.equals("1")) {
+                player2.genUnits(cntUnit);
+                System.out.println("Расстановка второго игрока:");
+                System.out.println(player2.getPlayerStatus(0, false));
+            } else if (input.equals("2")) {
+                if (player2.getCountLiveUnits() < 1) {
+                    System.out.println("Невозможно продолжить, так как не было расстановки!");
+                    continue;
+                }
+                System.out.println("Расстановка подтверждена!");
+                break;
+            } else {
+                System.out.println("Неправильная команда!");
+            }
+        }
+        List<Player> list = new ArrayList<>();
+        list.add(player1);
+        list.add(player2);
+        return list;
     }
 
     // Получить поля игроков в нормальном виде
